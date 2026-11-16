@@ -2,13 +2,32 @@ services:
   chat-agent:
     build:
       context: .
-      dockerfile: docker/Dockerfile  # якщо Dockerfile є в docker/; або просто Dockerfile в корені
+      dockerfile: docker/Dockerfile
     ports:
       - "8501:8501"
     volumes:
-      - .:/app                # монтуємо весь проєкт
-      - ./data:/app/data      # явно монтуємо data/, щоб контейнер бачив твої CSV
+      - .:/app
+      - ./data:/app/data
     environment:
       - PYTHONUNBUFFERED=1
     command: streamlit run src/app.py --server.port=8501 --server.address=0.0.0.0
+    restart: unless-stopped
+    profiles: ["ui"]
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models
+    environment:
+      MODEL_PATH: /app/models/recommendation_model.pkl
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     restart: unless-stopped

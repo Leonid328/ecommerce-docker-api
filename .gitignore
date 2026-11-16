@@ -13,6 +13,7 @@ data/*.csv
 data/*.json
 data/*.pkl
 models/*.pkl
+!models/recommendation_model.pkl
 
 # Environment
 .env
